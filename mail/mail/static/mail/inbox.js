@@ -1,3 +1,4 @@
+// Every time the page is loaded, 
 document.addEventListener('DOMContentLoaded', function() {
 
   // Use buttons to toggle between views
@@ -6,8 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
+  document.querySelector('#compose-form').onsubmit = send_email;
+
   // By default, load the inbox
   load_mailbox('inbox');
+
 });
 
 function compose_email() {
@@ -20,8 +24,45 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+
 }
 
+function send_email(event) {
+
+  const recipients = document.querySelector('#compose-recipients').value;
+  const subject = document.querySelector('#compose-subject').value;
+  const body = document.querySelector('#compose-body').value;
+  console.log(recipients, subject, body)
+  
+  fetch('/emails', {
+    method: 'POST',
+    body: JSON.stringify({
+      recipients: recipients,
+      subject: subject,
+      body: body
+    })
+  })
+    .then(response => response.json())
+    .then(result => {
+      if ("message" in result) {
+          // The email was sent successfully
+          console.log(result["message"])
+          load_mailbox('sent');
+      }
+      else {
+        // if error message in json response
+        console.log(result);
+
+        // TODO: Add error message to page instead of just to console
+      }
+    })
+    .catch(error => console.log(error)
+    );
+
+    // To prevent the page from refreshing or redirecting
+    event.preventDefault();
+}
+      
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
