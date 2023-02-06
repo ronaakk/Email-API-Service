@@ -148,9 +148,10 @@ function view_email(email_id, mailbox) {
     element.classList.add('email')
     
     const sender = document.createElement('div')
-    sender.innerHTML = `<strong>From:<strong> ${email['sender']}`;
+    sender.innerHTML = `<strong>From:</strong> ${email['sender']}`;
 
     const timestamp = document.createElement('div')
+    timestamp.classList.add('timestamp')
     timestamp.innerHTML = `<i>${email['timestamp']}</i>`;
 
     const subject = document.createElement('div')
@@ -166,12 +167,27 @@ function view_email(email_id, mailbox) {
     body.classList.add('body')
     body.innerHTML = email['body'];
 
-    // Making the sent page display 'To:' instead of 'From:'
-    if (mailbox === "sent") {
-      element.append(recipients, subject, body, timestamp)
+    // Archive button
+    const archive_button = document.createElement('button');
+
+    if (mailbox === "inbox" && email['archived'] === false) {
+      archive_button.classList.add('btn', 'btn-primary');
+      archive_button.innerText = 'Archive';
     } else {
-      element.append(sender, subject, body, timestamp)
-    } 
+      archive_button.classList.add('btn', 'btn-danger');
+      archive_button.innerText = 'Unarchive';
+    }
+    // To allow users to archive/unarchive an email
+    archive_button.addEventListener('click', () => archive_email(email['id']));
+      
+    // Making the sent page display 'To:' instead of 'From:'
+    if (mailbox === "inbox") {
+      element.append(sender, subject, body, timestamp, archive_button)
+    } else if (mailbox === "archive") {
+      element.append(sender, subject, body, timestamp, archive_button)
+    } else {
+      element.append(recipients, subject, body, timestamp)
+    }
 
     // Mark the email as read
     fetch(`/emails/${email_id}`, {
@@ -184,4 +200,32 @@ function view_email(email_id, mailbox) {
     document.querySelector('.email-view').append(element)
   })
   .catch(error => console.log(error))
+}
+
+function archive_email(email_id) {
+
+  // Using a GET request to see if the email is archived
+  fetch(`/emails/${email_id}`)
+  .then(response => response.json())
+  .then(email => {
+    if (email['archived'] === false) {
+      fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          archived: true
+        })
+      }
+    )}
+    else {
+      fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          archived: false
+        })
+      }
+    )}
+  })
+  // Take the user back to their inbox
+  .then(() => load_mailbox('inbox'))
+  .catch(error => console.log(error));
 }

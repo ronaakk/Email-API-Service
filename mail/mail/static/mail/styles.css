@@ -20,3 +20,8 @@ textarea {
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+.timestamp {
+    margin-bottom: 15px;
+    color: slategrey;
+}
