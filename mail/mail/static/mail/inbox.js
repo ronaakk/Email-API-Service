@@ -52,9 +52,8 @@ function send_email(event) {
       }
       else {
         // if error message in json response
-        console.log(result);
-
-        // TODO: Add error message to page instead of just to console
+        console.log(result)
+        console.log(error)
       }
     })
     .catch(error => console.log(error)
@@ -117,6 +116,7 @@ function load_mailbox(mailbox) {
         emaildiv.style.backgroundColor = 'white';
       }
       if (mailbox === "inbox" && email['read'] === false) {
+        emaildiv.append(sender, subject, timestamp);
         emaildiv.style.backgroundColor = 'white';
       }
   
@@ -167,8 +167,11 @@ function view_email(email_id, mailbox) {
     body.classList.add('body')
     body.innerHTML = email['body'];
 
-    // Archive button
+    // Archive and Reply buttons
     const archive_button = document.createElement('button');
+    const reply_button = document.createElement('button');
+    reply_button.classList.add('btn', 'btn-primary', 'reply-button');
+    reply_button.innerText = 'Reply';
 
     if (mailbox === "inbox" && email['archived'] === false) {
       archive_button.classList.add('btn', 'btn-primary');
@@ -179,14 +182,16 @@ function view_email(email_id, mailbox) {
     }
     // To allow users to archive/unarchive an email
     archive_button.addEventListener('click', () => archive_email(email['id']));
+    // To allow users to reply to an email
+    reply_button.addEventListener('click', () => reply_to_email(email['id']));
       
     // Making the sent page display 'To:' instead of 'From:'
     if (mailbox === "inbox") {
-      element.append(sender, subject, body, timestamp, archive_button)
+      element.append(sender, subject, body, timestamp, reply_button, archive_button)
     } else if (mailbox === "archive") {
-      element.append(sender, subject, body, timestamp, archive_button)
+      element.append(sender, subject, body, timestamp, reply_button, archive_button)
     } else {
-      element.append(recipients, subject, body, timestamp)
+      element.append(recipients, subject, body, timestamp, reply_button)
     }
 
     // Mark the email as read
@@ -199,7 +204,7 @@ function view_email(email_id, mailbox) {
 
     document.querySelector('.email-view').append(element)
   })
-  .catch(error => console.log(error))
+  .catch(error => console.log(error));
 }
 
 function archive_email(email_id) {
@@ -228,4 +233,27 @@ function archive_email(email_id) {
   // Take the user back to their inbox
   .then(() => load_mailbox('inbox'))
   .catch(error => console.log(error));
+}
+
+function reply_to_email(email_id) {
+
+  // Show compose view and hide other views
+  compose_email();
+
+  // Fill out composition fields using GET request
+  fetch(`/emails/${email_id}`)
+  .then(response => response.json())
+  .then(email => {
+    document.querySelector('#compose-recipients').value = email["sender"];
+    document.querySelector("#compose-")
+    if (email['subject'] === '') {
+      email['subject'] = 'No Subject'
+    }
+    document.querySelector('#compose-subject').value = `Re: ${email['subject']}`;
+    const pre_body_text =`On ${email["timestamp"]}, ${email["sender"]} wrote: \n \n`;
+    document.querySelector("#compose-body").value = pre_body_text + '--------------------- \n \n' + `${email['body']}` + '\n \n --------------------- \n \n';
+  })
+  // .then(() => send_email)
+  // .then(() => load_mailbox('inbox'))
+  // .catch(error => console.log(error));
 }
