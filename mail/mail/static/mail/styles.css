@@ -1,3 +1,22 @@
 textarea {
     min-height: 400px;
 }
+
+.email-div, .email-view {
+    border-radius: 1em;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 20px;
+    box-shadow: 10px 10px 30px rgb(0, 0, 0, 0.1);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    cursor: pointer;
+}
+
+.body {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
