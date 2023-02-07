@@ -244,16 +244,16 @@ function reply_to_email(email_id) {
   fetch(`/emails/${email_id}`)
   .then(response => response.json())
   .then(email => {
+
     document.querySelector('#compose-recipients').value = email["sender"];
-    document.querySelector("#compose-")
     if (email['subject'] === '') {
       email['subject'] = 'No Subject'
     }
-    document.querySelector('#compose-subject').value = `Re: ${email['subject']}`;
+    document.querySelector('#compose-subject').value = 
+      email["subject"].slice(0,4) === "Re: " ? email["subject"] : "Re: " + email["subject"]
     const pre_body_text =`On ${email["timestamp"]}, ${email["sender"]} wrote: \n \n`;
-    document.querySelector("#compose-body").value = pre_body_text + '--------------------- \n \n' + `${email['body']}` + '\n \n --------------------- \n \n';
+    document.querySelector("#compose-body").value = pre_body_text + '\n \n' + `${email['body']}` + '\n \n --------------------- \n \n';
+    
   })
-  // .then(() => send_email)
-  // .then(() => load_mailbox('inbox'))
-  // .catch(error => console.log(error));
+  .catch(error => console.log(error));
 }
